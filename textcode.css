@@ -1,0 +1,12 @@
+.__textcode {
+    background: #222;
+    color: white;
+    white-space: pre;
+    tab-size: 4;
+    padding: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    box-sizing: border-box;
+    overflow: scroll;
+    outline: 0px solid transparent;
+    display:inline-block;
+}
