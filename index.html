@@ -9,7 +9,7 @@
 </head>
 <body style="margin:0;padding:0;height: 100vh;">
     <div style="padding:50px;box-sizing: border-box;width:100%;height: 100%;">
-        <div id="textcode" contenteditable="true" style="width:100%;height:100%"></div>
+        <div id="textcode" style="width:100%;height:100%"></div>
     </div>
 </body>
 </html>
@@ -23,6 +23,10 @@
         {color:"cornflowerblue", keywords:["let", "new", "function", "return"], validSpaces:validSpace},
         {color:"yellow", keywords:["const"], validSpaces:validSpace}
     ];
+    settings.autoclose = [["{", "}"], ["[", "]"], ["(", ")"]]
+    settings.trackTabs = true; // TBD
+    settings.spellcheck = false;
+
 
 
     let textcode = new TextCode(document.getElementById("textcode"), settings);

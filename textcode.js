@@ -1,18 +1,44 @@
 class TextCode {
 
-    constructor (DOMelem, keys) {
+    constructor (DOMelem, settings) {
         this.DOMelem = DOMelem;
 
-        DOMelem.classList.add("__textcode");
+        // DOMelem.classList.add("__textcode");
+        this.setUpStyle();
 
-        if (keys)
-            this.parseKeys(keys);
+        if (settings)
+            this.parseSettings(settings);
+
+        // Must
+        DOMelem.contentEditable = true;
 
         this.setUpEventListeners();
 
     }
 
-    parseKeys = function(keys) {
+    setUpStyle = function() {
+
+        // Set our style with these attributes
+        // Please don't change unsafe properties, like display and white-space
+        let defaultStyle = [
+            ["background", "#222"],
+            ["color", "white"],
+            ["white-space", "pre"],
+            ["tab-size", "4"],
+            ["padding", "8px"],
+            ["font-family", "'Courier New', Courier, monospace"],
+            ["box-sizing", "border-box"],
+            ["overflow", "scroll"],
+            ["outline", "0px solid transparent"],
+            ["display","inline-block"]
+        ];
+
+        defaultStyle.forEach(setting=>
+            this.DOMelem.style.setProperty(setting[0], setting[1])
+        );
+    }
+
+    parseSettings = function(settings) {
 
         /**
          * Format (JSON):
@@ -31,7 +57,13 @@ class TextCode {
          *          ...
          *      ],
          *      
-         *      validSpaces: [ " ", "\t", "\n"]
+         *      validSpaces: [ " ", "\t", "\n"],
+         * 
+         *      autoclose: [
+         *          [ "{", "}" ],
+         *          [ "[", "]" ]
+         *          ...
+         *      ]
          * }
          * 
          * NOTE: 
@@ -44,11 +76,23 @@ class TextCode {
          */
 
         this.keys = [];
-        keys.keys.forEach(key => {
-            this.keys.push(key);
-        });
 
+        if (settings.keys) {
+            settings.keys.forEach(key => {
+                this.keys.push(key);
+            });
+        }
 
+        this.autoclose = [];
+
+        if (settings.autoclose) {
+            settings.autoclose.forEach(pair => {
+                this.autoclose.push(pair);
+            });
+        }
+
+        if (!settings.spellcheck)
+            this.DOMelem.spellcheck = false;
     }
 
 
@@ -108,7 +152,7 @@ class TextCode {
         });
 
 
-        // Set tab
+        // Set tab and autoclose
         DOMelem.addEventListener("keydown", e=>{
 
             if (e.key === "Tab") {
@@ -117,6 +161,35 @@ class TextCode {
                 //prevent focusing on next element
                 e.preventDefault();   
 
+            }
+
+            else if (e.key === "Enter") {
+
+                let currText = this.DOMelem.innerText;
+                let currPos = this.getCursorPosition();
+                
+                if (currText[currPos] == '}') {
+                    // this.setCursorPosition(this.getCursorPosition()-1);
+                    document.execCommand('insertHTML', false, '\n');
+                    this.setCursorPosition(this.getCursorPosition()-1);
+                }
+            }
+
+            else {
+
+                this.autoclose.forEach(pair => {
+
+                    if (e.key === pair[0]) {
+
+                        e.preventDefault();
+
+                        document.execCommand('insertHTML', false, pair[0]);
+                        document.execCommand('insertHTML', false, pair[1]);
+
+                        this.setCursorPosition(this.getCursorPosition()-1);
+
+                    }
+                })
             }
 
         })
